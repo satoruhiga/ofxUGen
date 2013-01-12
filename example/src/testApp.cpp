@@ -40,11 +40,6 @@ public:
 		ofSetColor(255);
 		ofCircle(pos.x, pos.y, amp.getValue() * 80);
 	}
-	
-	bool isAlive()
-	{
-		return !Out().isNull();
-	}
 };
 
 vector<MySynth*> synths;

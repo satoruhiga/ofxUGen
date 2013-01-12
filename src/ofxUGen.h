@@ -35,17 +35,7 @@ public:
 	
 	void lock() { mutex.lock(); }
 	void unlock() { mutex.unlock(); }
-	
-protected:
-	
-	ofSoundStream stream;
-	BufferBlock *output_buffer;
-	
-	UGenArray array;
-	Mix out;
-	
-	ofMutex mutex;
-	
+
 	void registerSyhth(UGen &ugen)
 	{
 		OFXUGEN_SCOPED_LOCK;
@@ -57,6 +47,16 @@ protected:
 		OFXUGEN_SCOPED_LOCK;
 		array.removeItem(ugen);
 	}
+
+protected:
+	
+	ofSoundStream stream;
+	BufferBlock *output_buffer;
+	
+	UGenArray array;
+	Mix out;
+	
+	ofMutex mutex;
 };
 
 class ofxUGen::SynthDef : public DoneActionReceiver
@@ -94,6 +94,11 @@ public:
 		out = UGen::getNull();
 	}
 	
+	bool isAlive()
+	{
+		return !Out().isNull();
+	}
+
 protected:
 	
 	void Out(const UGen &ugen)
