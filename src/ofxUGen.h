@@ -4,28 +4,38 @@
 
 #include "UGen.h"
 
-#define OFXUGEN_SCOPED_LOCK ofxUGen::ScopedLock __lock__(ofxUGen::instance().mutex)
+#include "ofxUGenUtils.h"
 
-class ofxUGen : public ofBaseSoundInput, public ofBaseSoundOutput
+#define OFXUGEN_SCOPED_LOCK ofxUGen::ScopedLock __lock__(Server::get().mutex)
+
+namespace ofxUGen
 {
+	class Server;
+	class SynthDef;
+	
+	typedef Poco::ScopedLock<Poco::FastMutex> ScopedLock;
+}
+
+class ofxUGen::Server : public ofBaseSoundInput, public ofBaseSoundOutput
+{
+	friend class SynthDef;
+	
 	class BufferBlock;
+	static Server *_instance;
 	
-	static ofxUGen *_instance;
+	Server();
+	~Server();
 	
-	ofxUGen();
-	~ofxUGen();
-	
-	ofxUGen(const ofxUGen &);
-	ofxUGen& operator=(const ofxUGen&);
+	Server(const Server &);
+	Server& operator=(const Server&);
 	
 public:
 	
-	static ofxUGen& instance();
+	static Server& get();
+	inline static Server& instance() { return get(); }
 	
 	class SynthDef;
 	friend class SynthDef;
-	
-	typedef Poco::ScopedLock<Poco::FastMutex> ScopedLock;
 	
 	void setup(int num_output = 2, int num_input = 0, float sample_rate = 44100,  int buffer_size = 512);
 	void close();
@@ -36,13 +46,13 @@ public:
 	void lock() { mutex.lock(); }
 	void unlock() { mutex.unlock(); }
 
-	void registerSyhth(UGen &ugen)
+	void play(UGen &ugen)
 	{
 		OFXUGEN_SCOPED_LOCK;
 		array.add(ugen);
 	}
 	
-	void unregisterSyhth(UGen &ugen)
+	void stop(UGen &ugen)
 	{
 		OFXUGEN_SCOPED_LOCK;
 		array.removeItem(ugen);
@@ -65,7 +75,7 @@ public:
 	
 	SynthDef()
 	{
-		ofxUGen::instance();
+		Server::get();
 	}
 	
 	virtual ~SynthDef()
@@ -75,12 +85,12 @@ public:
 	
 	void play()
 	{
-		ofxUGen::instance().registerSyhth(out);
+		Server::get().play(out);
 	}
 	
 	void stop()
 	{
-		ofxUGen::instance().unregisterSyhth(out);
+		Server::get().stop(out);
 	}
 	
 	void release()
@@ -113,3 +123,8 @@ private:
 	
 	UGen out;
 };
+
+namespace ofxUGen
+{
+	inline Server& s() { return Server::get(); }
+}

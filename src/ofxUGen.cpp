@@ -1,6 +1,8 @@
 #include "ofxUGen.h"
 
-class ofxUGen::BufferBlock
+using namespace ofxUGen;
+
+class Server::BufferBlock
 {
 public:
 	
@@ -69,34 +71,34 @@ private:
 };
 
 
-#pragma mark - ofxUGen
+#pragma mark - Server
 
-ofxUGen* ofxUGen::_instance = NULL;
+Server* Server::_instance = NULL;
 
-ofxUGen& ofxUGen::instance()
+Server& Server::get()
 {
 	if (_instance == NULL)
-		_instance = new ofxUGen;
+		_instance = new Server;
 	return *_instance;
 }
 
-ofxUGen::ofxUGen()
+Server::Server()
 {
 	UGen::initialise();
 }
 
-ofxUGen::~ofxUGen()
+Server::~Server()
 {
 	close();
 	
 	UGen::shutdown();
 }
 
-void ofxUGen::audioIn(float *input, int bufferSize, int nChannels)
+void Server::audioIn(float *input, int bufferSize, int nChannels)
 {
 }
 
-void ofxUGen::audioOut(float *output, int bufferSize, int nChannels)
+void Server::audioOut(float *output, int bufferSize, int nChannels)
 {
 	if (mutex.tryLock())
 	{
@@ -116,7 +118,7 @@ void ofxUGen::audioOut(float *output, int bufferSize, int nChannels)
 	memcpy(output, output_buffer->getInterleavedBuffer(), sizeof(float) * bufferSize * nChannels);
 }
 
-void ofxUGen::setup(int num_output, int num_input, float sample_rate, int buffer_size)
+void Server::setup(int num_output, int num_input, float sample_rate, int buffer_size)
 {
 	if (num_input)
 	{
@@ -139,7 +141,7 @@ void ofxUGen::setup(int num_output, int num_input, float sample_rate, int buffer
 	stream.setup(num_output, num_input, sample_rate, buffer_size, 4);
 }
 
-void ofxUGen::close()
+void Server::close()
 {
 	stream.close();
 }
