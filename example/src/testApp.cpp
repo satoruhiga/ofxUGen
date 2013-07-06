@@ -2,6 +2,8 @@
 
 #include "ofxUGen.h"
 
+using namespace ofxUGen;
+
 class MySynth : public ofxUGen::SynthDef
 {
 public:
@@ -51,7 +53,7 @@ void testApp::setup()
 	ofSetVerticalSync(true);
 	ofBackground(0);
 	
-	ofxUGen::instance().setup();
+	s().setup();
 }
 
 //--------------------------------------------------------------
